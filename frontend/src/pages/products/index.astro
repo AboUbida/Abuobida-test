@@ -1,0 +1,51 @@
+---
+// Components
+import Layout from "../../layouts/Layout.astro";
+import ProductCard from "../../components/product/ProductCard";
+
+// Interfaces
+import type IProduct from "../../interfaces/IProduct";
+
+// Fetch products data
+  const response = await fetch(`${import.meta.env.PUBLIC_SERVER_URL}/api/products/?populate=*`);
+  const data = await response.json();
+  const products = data.data.map((product: { id: number; attributes: { title: string; price: number; image: { data: { attributes: { url: string; }; }; }; }; }) => {
+    return {
+      id: product.id,
+      title: product.attributes.title,
+      price: product.attributes.price,
+      image: product.attributes.image.data.attributes.url,
+    }
+  })
+
+---
+
+<Layout>
+  <div class="container d-flexflex-column flex-column-fluid p-10 pb-lg-20">
+    <!--begin::Products wrapper-->
+    <div class="flex-column-fluid">
+      <!--begin::Products-->
+      <div class="row">
+        {products.map((product: IProduct) => <ProductCard product={product}/>)}
+      </div>
+      <!--end::Products-->
+    </div>
+    <!--end::Products wrapper-->
+  </div>
+</Layout>
+
+<script>
+  import { io } from "socket.io-client";
+
+  // connect the socket
+  const socket = io(import.meta.env.PUBLIC_SERVER_URL);
+
+  //  wait until socket connects before adding event listeners
+  socket.on("connect", () => {
+    console.log("connected");
+    socket.on("update:product", (data) => {
+      window.location.reload();
+    });
+  });
+
+</script>

@@ -1,0 +1,66 @@
+---
+// Components
+import Menu from "./Menu.astro";
+import Nav from "./Nav/Nav.astro";
+---
+
+<div id="kt_app_header" class="app-header">
+  <div
+    id="kt_app_header_container"
+    class="app-container container d-flex align-items-stretch justify-content-between"
+  >
+    <div
+      id="kt_app_header_wrapper"
+      class="d-flex align-items-stretch justify-content-between flex-grow-1"
+    >
+      <!--begin::Menu-->
+      <Menu />
+      <!--end::Menu-->
+      <!--begin::User Nav-->
+      <Nav />
+      <!--end::User Nav-->
+    </div>
+  </div>
+</div>
+
+<script>
+  //////////////////////////////////////////
+  // HELPER: Log out
+  import {signOut} from "../../helpers/user"
+  //////////////////////////////////////////
+  // HELPER: Update cart
+  import {updateCart} from "../../helpers/cart"
+
+  //////////////////////////////////////////
+  // Sign out
+  const signOutBtn = document.querySelector("#sign_out") as HTMLElement
+  signOutBtn.addEventListener("click", function() {
+    // Delete cookie using 'cookie' endpoint
+    signOut()
+  })
+  //////////////////////////////////////////
+  // Delete cart item
+  const cart = document.querySelector("#cart") as HTMLElement
+  cart.addEventListener('click', event => {
+    const element = event.target as HTMLElement
+    if (element.classList.contains("delete_btn")) {
+      // Get product id
+      const cartItemToDeleteId = +element.getAttribute("data-id")!;
+      // Delete it from the cart
+      updateCart("delete", cartItemToDeleteId)
+    }
+  })
+  //////////////////////////////////////////
+  // Add to cart
+  const container = document.querySelector("#main_content") as HTMLElement
+  // Add event listener
+  container.addEventListener('click', event => {
+    const element = event.target as HTMLElement
+    if (element.classList.contains("add_btn")) {
+      // Get product id
+      const cartItemToAddId = +element.getAttribute("data-id")!;
+      // Add it to the cart
+      updateCart("add", cartItemToAddId)
+    }
+  })
+</script>

@@ -1,0 +1,55 @@
+---
+// Components
+import NavItem from "./NavItem.astro";
+import CartItem from "./CartItem.astro";
+
+// Interfaces
+import type IUser from "../../../interfaces/IUser";
+
+// Default values for unauthorized user
+let user = {name: "Stranger", email: "Unknown", cart: []} as IUser 
+
+// Get the user from the server if a cookie exists
+if(user.name === "Stranger" && Astro.cookies.get('jwt_token').value) {  
+  const response = await fetch(`${import.meta.env.PUBLIC_SERVER_URL}/api/users/me/?populate[cart][populate][0]=image`, {
+    headers: new Headers({
+      'Authorization': `Bearer ${Astro.cookies.get('jwt_token').value}`, 
+      'Content-Type': 'application/x-www-form-urlencoded'
+    }),
+  });
+  const data = await response.json();
+  user.name = data.username;
+  user.email = data.email;
+  user.cart = data.cart.map((cartItem: { id: number; title: string; price: number; image: { url: string; }; }) => {
+    return {
+      id: cartItem.id,
+      title: cartItem.title,
+      prie: cartItem.price,
+      image: cartItem.image?.url
+    }
+  })
+}
+---
+
+<div class="app-navbar flex-shrink-0">
+  <!--begin::Nav Item-->
+  <NavItem icon="bag" name="Your cart">
+    { user.name !== "Stranger" && (user?.cart?.length !==0 ? user?.cart?.map(cartItem => {
+        return <CartItem cartItem={cartItem}/>
+      }) : <div class="fw-semibold text-muted fs-7">Cart is empty</div>)
+    }
+    { user.name === "Stranger" && <div class="fw-semibold text-muted fs-7">Sign in to see you cart items</div>
+    }
+  </NavItem>
+  <!--end::Nav Item-->
+  <!--begin::Nav Item-->
+  <NavItem icon="person-circle" name={user.name} email={user.email}>
+    <!--begin::Logout button-->
+    <div class="menu-item">
+      { user.name !== "Stranger" && <button type="button" class="btn btn-light-primary w-100" id="sign_out">Sign out</button>}
+      { user.name === "Stranger" && <a href="/auth/signin" class="btn btn-light-primary w-100" id="sign_out">Sign in</a>}
+    </div>
+    <!--end::Logout button-->
+  </NavItem>
+   <!--end::Nav Item-->
+</div>

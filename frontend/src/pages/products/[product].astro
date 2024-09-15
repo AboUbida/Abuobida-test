@@ -1,0 +1,27 @@
+---
+// Components
+import Layout from "../../layouts/Layout.astro";
+import ProductCard from "../../components/product/ProductCard";
+
+// Interfaces
+import type IProduct from "../../interfaces/IProduct";
+
+const id = Astro.params.product;
+
+// Fetch product data
+const response = await fetch(`${import.meta.env.PUBLIC_SERVER_URL}/api/products/${id}/?populate=*`);
+const data = await response.json();
+const product = {
+  id: data.data.id,
+  title: data.data.attributes.title,
+  price: data.data.attributes.price,
+  image: data.data.attributes.image.data.attributes.url
+} as IProduct
+
+---
+
+<Layout>
+  <div class="container d-flex flex-column flex-column-fluid p-10 pb-lg-20">
+    <ProductCard product={product} fullScreen={true}/>
+  </div>
+</Layout>
